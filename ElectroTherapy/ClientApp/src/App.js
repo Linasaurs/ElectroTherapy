@@ -3,7 +3,6 @@ import { Route } from 'react-router';
 import { Layout } from './components/Layout';
 import { Home } from './components/Home';
 import { Products } from './components/Products';
-import { Counter } from './components/Counter';
 import { AddProduct } from './components/AddProduct';
 import { SignIn } from './components/SignIn';
 
@@ -19,7 +18,6 @@ export default class App extends Component {
     return (
       <Layout>
         <Route exact path='/' component={Home} />
-        <Route path='/counter' component={Counter} />
         <Route path='/products' component={Products} />
         <Route path='/add-product' component={AddProduct} />
         <Route path='/signup' component={SignUp} />

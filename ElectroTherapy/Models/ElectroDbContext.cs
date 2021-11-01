@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.Extensions.Configuration;
 
 namespace ElectroTherapy.Models
@@ -21,6 +22,11 @@ namespace ElectroTherapy.Models
             string connectionString = ConfigurationExtensions.GetConnectionString(this.config, "ElectroDb");
             options.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString));
         }
-        
+
+        protected override void OnModelCreating(ModelBuilder models)
+        {
+            models.Entity<Customer>().HasIndex(m => m.Email).IsUnique();
+        }
+
     }
 }

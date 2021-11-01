@@ -2,13 +2,15 @@ import React, { Component } from 'react';
 import Select from 'react-bootstrap/Form';
 import {FormControl} from "react-bootstrap";
 import Button from "react-bootstrap/Button";
+import {forEach} from "react-bootstrap/ElementChildren";
+import jwt from "jwt-decode";
 
 export class Products extends Component {
   static displayName = Products.name;
 
   constructor(props) {
     super(props);
-    this.state = { productList: [], loading: true, filter: "" };
+    this.state = { productList: [], loading: true, filter: "" , pageIndex:0, hasPrev:false, hasNext:true};
   }
 
   componentDidMount() {
@@ -29,7 +31,16 @@ export class Products extends Component {
       }
     }
     
-   renderForecastsTable(productList) {
+   renderProductsTable(productList) {
+      let token=  localStorage.getItem("Token");
+      let renderDiscount = false;
+      let renderOrder = false;
+      if(token != null){
+          const user = jwt(token);
+          renderDiscount = user.role === "admin";
+          renderOrder = user.role === "customer";
+      }
+          
     return (
       <table className='table table-striped' aria-labelledby="tabelLabel">
         <thead>
@@ -47,8 +58,8 @@ export class Products extends Component {
               <td>{product.price}</td>
               <td>{this.parseCat(product.category)}</td>
               <td>{product.desc}</td>
-              <td> <Button type="submit" onClick={() => this.addDiscount(product.id)}>Add Discount</Button> </td>
-              <td> <Button type="submit" onClick={() => this.orderProduct(product)}>Order</Button> </td>
+              <td style={{ display: renderDiscount ? "block" : "none" }}> <Button  type="submit" onClick={() => this.addDiscount(product.id)}>Add Discount</Button> </td>
+              <td style={{ display: renderOrder ? "block" : "none" }}> <Button  type="submit" onClick={() => this.orderProduct(product)}>Order</Button> </td>
             </tr>
           )}
         </tbody>
@@ -68,7 +79,7 @@ export class Products extends Component {
   render() {
     let contents = this.state.loading
       ? <p><em>Loading...</em></p>
-      : this.renderForecastsTable(this.GetFilteredProducts());
+      : this.renderProductsTable(this.GetPagedProducts());
 
     return (
       <div>
@@ -83,6 +94,8 @@ export class Products extends Component {
         </FormControl>
         </div>
         {contents}
+          <Button  disabled={!this.state.hasNext} className="float-right" onClick={() => this.changeIndex(1)}>Next</Button>
+          <Button disabled={!this.state.hasPrev} className="left" onClick={() => this.changeIndex(-1)}>Previous</Button>
       </div>
     );
   }
@@ -90,7 +103,7 @@ export class Products extends Component {
   async populateProducts() {
     const response = await fetch('/api/Product');
     const data = await response.json();
-    this.setState({ productList: data, loading: false });
+    this.setState({ productList: data, loading: false, hasNext:data.length>5});
   }
 
    addDiscount(id) {
@@ -100,4 +113,17 @@ export class Products extends Component {
    orderProduct(product) {
        this.props.history.push("/order",{ product: product });
   }
+
+    changeIndex(inc) {
+        let newIndex = this.state.pageIndex + inc
+        let pageCount = Math.ceil(this.GetFilteredProducts().length/5)
+        if (newIndex>=0 && newIndex<pageCount)
+        {
+            this.setState({pageIndex:newIndex, hasPrev:newIndex>0, hasNext:newIndex<pageCount-1})
+        }
+    }
+    GetPagedProducts(){
+      let prodList = this.GetFilteredProducts()
+        return prodList.slice(this.state.pageIndex*5,this.state.pageIndex*5+5)
+    }
 }

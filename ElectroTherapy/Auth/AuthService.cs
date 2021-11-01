@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -25,10 +26,7 @@ namespace ElectroTherapy.Auth
             var key = Encoding.ASCII.GetBytes(this._jwtSecret);
             var tokenDescriptor = new SecurityTokenDescriptor
             {
-                Subject = new ClaimsIdentity(new[]
-                {
-                    new Claim(ClaimTypes.Name, user.Id.ToString()),
-                }),
+                Subject = new ClaimsIdentity(GetUserClaims(user)),
                 Expires = DateTime.UtcNow.AddHours(1),
                 SigningCredentials =
                     new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature),
@@ -36,6 +34,24 @@ namespace ElectroTherapy.Auth
             var token = tokenHandler.CreateToken(tokenDescriptor);
             return tokenHandler.WriteToken(token);
 
+        }
+
+        private static Claim[] GetUserClaims(Customer user)
+        {
+            List<Claim> claims = new List<Claim>()
+            {
+                new Claim(ClaimTypes.Name, user.Id.ToString()),
+            };
+            if (user.IsAdmin)
+            {
+                claims.Add(new Claim(ClaimTypes.Role, "admin"));
+            }
+            else
+            {
+                claims.Add(new Claim(ClaimTypes.Role, "customer"));
+            }
+
+            return claims.ToArray();
         }
     }
 }

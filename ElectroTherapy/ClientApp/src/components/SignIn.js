@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
+import { useHistory } from "react-router-dom";
+
 
 export class SignIn extends Component {
     static displayName = SignIn.name;
@@ -18,25 +20,28 @@ export class SignIn extends Component {
     }
 
     handleSubmit(event) {
-        fetch('/api/Customer/signin',{
-            method:'Post',
-            headers:{
-                'Content-Type':'application/json'
+        fetch('/api/Customer/signin', {
+            method: 'Post',
+            headers: {
+                'Content-Type': 'application/json'
             },
-            body:JSON.stringify({
-                password:event.target.password.value,
-                email:event.target.email.value
+            body: JSON.stringify({
+                password: event.target.password.value,
+                email: event.target.email.value
             })
         }).then(async response => {
             if (!response.ok) {
-                alert("User not found")
+                alert(await response.text())
             } else {
-                alert("Sign in yoooo!!!")
-                localStorage.setItem('Token', await response.text())
+                let token = await response.text()
+                localStorage.setItem('Token', token)
+                alert("Signed in successfully!")
+                window.location.href="/"
             }
 
         })
         event.preventDefault();
+
     }
 
 
@@ -44,7 +49,7 @@ export class SignIn extends Component {
 
         return (
             <div>
-                <h1>Sign up</h1>
+                <h1>Sign In</h1>
                 <form onSubmit={this.handleSubmit}>
                     <Form.Group className="mb-3" controlId="email" >
                         <Form.Label>E-mail</Form.Label>

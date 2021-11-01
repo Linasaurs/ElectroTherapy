@@ -29,11 +29,12 @@ export class SignUp extends Component {
                 password:event.target.password.value,
                 email:event.target.email.value
             })
-        }).then(response => {
+        }).then(async response => {
             if (!response.ok) {
-                alert ("Error! Could not register user.")}
+                alert (await response.text())
+            }
             else{
-                alert("Registered successfully fi a7la tech store fyky ya masr");
+                alert("Registered successfully \n welcome to a7la tech store fyky ya masr");
             }
 
         })
